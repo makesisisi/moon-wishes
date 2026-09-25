@@ -15,6 +15,8 @@
 - Every approved or locally sent blessing stays in the playback catalog. New blessings take priority, then the historical catalog loops continuously instead of disappearing after one pass.
 - No cross-device account history: anonymous Supabase sign-in on first send. Viewing is public.
 - The user wants GitHub Pages and Supabase, with striking but readable festival interaction.
+- On mobile, the blessing-history sheet should use most of the viewport height, keep its heading compact and give the card list an independent scroll area instead of compressing the messages.
+- Keep lightweight, no-text participation behind one compact “月下相聚” entry. Its first two rituals are “送出一块月饼” and “一起赏一会月”; each anonymous visitor may join each ritual once, and only aggregate counts are public.
 
 Run the local server yourself and open the preview in the browser available to this environment. Do not give the user server-start instructions when you can run it.
 

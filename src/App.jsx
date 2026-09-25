@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Check, ListBullets, Pause, PencilSimple, Play, SpeakerHigh, SpeakerSlash, X } from '@phosphor-icons/react';
+import { ArrowRight, Check, Cookie, HandHeart, ListBullets, MoonStars, Pause, PencilSimple, Play, SpeakerHigh, SpeakerSlash, X } from '@phosphor-icons/react';
 import { createWishStore, isLive } from './wishes.js';
 
 const store = createWishStore();
@@ -52,6 +52,11 @@ export function App() {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [musicOn, setMusicOn] = useState(false);
   const [invitation, setInvitation] = useState('waiting');
+  const [ritualCounts, setRitualCounts] = useState({ mooncake: 0, moonwatch: 0 });
+  const [joinedRituals, setJoinedRituals] = useState([]);
+  const [ritualSending, setRitualSending] = useState('');
+  const [ritualError, setRitualError] = useState('');
+  const [ritualPulse, setRitualPulse] = useState('');
   const dialogRef = useRef(null);
   const invitationButtonRef = useRef(null);
   const sceneRef = useRef(null);
@@ -69,6 +74,7 @@ export function App() {
   const toastTimer = useRef();
   const lanternTimer = useRef();
   const invitationTimer = useRef();
+  const ritualTimer = useRef();
   const assetStyles = useMemo(() => ({
     '--scene-image': `url("${import.meta.env.BASE_URL}images/moonlit-osmanthus.jpg")`,
     '--wish-button': `url("${import.meta.env.BASE_URL}images/wish-button.png")`,
@@ -124,7 +130,26 @@ export function App() {
       clearTimeout(toastTimer.current);
       clearTimeout(lanternTimer.current);
       clearTimeout(invitationTimer.current);
+      clearTimeout(ritualTimer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    const refresh = async () => {
+      try {
+        const { counts, joined } = await store.loadRituals();
+        if (!disposed) {
+          setRitualCounts(counts);
+          setJoinedRituals(joined);
+        }
+      } catch {
+        // Wishes remain usable when the optional ritual counter is unavailable.
+      }
+    };
+    refresh();
+    const timer = setInterval(refresh, 30000);
+    return () => { disposed = true; clearInterval(timer); };
   }, []);
 
   useEffect(() => {
@@ -330,11 +355,32 @@ export function App() {
     finally { setSending(false); }
   }
 
+  async function joinRitual(kind) {
+    if (ritualSending || joinedRituals.includes(kind)) return;
+    setRitualError('');
+    setRitualSending(kind);
+    try {
+      const result = await store.sendRitual(kind);
+      setJoinedRituals(current => [...new Set([...current, kind])]);
+      if (!result.duplicate) {
+        setRitualCounts(current => ({ ...current, [kind]: current[kind] + 1 }));
+      }
+      clearTimeout(ritualTimer.current);
+      setRitualPulse(kind);
+      ritualTimer.current = setTimeout(() => setRitualPulse(''), 2600);
+      announce(kind === 'mooncake' ? '一块月饼，已经送到今夜的相逢里' : '你也坐进了这轮月光里');
+    } catch (problem) {
+      setRitualError(friendlyError(problem));
+    } finally {
+      setRitualSending('');
+    }
+  }
+
   return <div className="app-shell" style={assetStyles}>
     <audio ref={audioRef} src={musicSrc} loop autoPlay preload="auto" onPlay={() => setMusicOn(true)} onPause={() => setMusicOn(false)} />
     <div className="ambient-image" aria-hidden="true" />
     <div className="ambient-shade" aria-hidden="true" />
-    <main ref={sceneRef} tabIndex={-1} aria-hidden={invitation !== 'hidden'} className={`scene${motion ? '' : ' motion-off'}${panel || selected ? ' panel-open' : ''}`}>
+    <main ref={sceneRef} tabIndex={-1} aria-hidden={invitation !== 'hidden'} className={`scene${motion ? '' : ' motion-off'}${panel || selected ? ' panel-open' : ''}${ritualPulse ? ` ritual-${ritualPulse}` : ''}`}>
     <div className="scene-image" aria-hidden="true" /><div className="scene-shade" aria-hidden="true" />
     <div className="scene-atmosphere" aria-hidden="true">
       <span className="star-wash" />
@@ -382,12 +428,20 @@ export function App() {
       <img className="lantern-art" src={`${import.meta.env.BASE_URL}images/wish-lantern-256.png`} alt="" />
     </div>}
 
+    {ritualPulse && <div className={`ritual-burst ritual-burst-${ritualPulse}`} aria-hidden="true">
+      {ritualPulse === 'mooncake' ? <Cookie size={46} weight="duotone" /> : <MoonStars size={52} weight="duotone" />}
+      <span>{ritualPulse === 'mooncake' ? '甜意已送达' : '此刻共赏月'}</span>
+    </div>}
+
     <footer className="scene-footer">
       <div className="sub-actions">
         <button type="button" onClick={() => openPanel('list')} aria-label={`查看今夜的祝福${count ? `，共 ${count} 条` : ''}`}><ListBullets size={17} /> 祝福{count ? ` · ${count}` : ''}</button>
         <button type="button" onClick={() => setMotion(value => !value)} aria-label={motion ? '减少背景动画' : '开启背景动画'}>{motion ? <Pause size={15} /> : <Play size={15} />}{motion ? '动画' : '开动画'}</button>
         <button type="button" onClick={toggleMusic} className={musicEnabled ? 'music-on' : ''} aria-pressed={musicEnabled} aria-label={musicEnabled ? '关闭背景音乐《三相奇谈》游戏原声' : '开启背景音乐《三相奇谈》游戏原声'} title="背景音乐《三相奇谈》游戏原声">{musicEnabled ? <SpeakerHigh size={16} /> : <SpeakerSlash size={16} />}{musicOn ? '音乐中' : musicEnabled ? '音乐开' : '音乐关'}</button>
       </div>
+      <button type="button" className="ritual-entry" onClick={() => { setRitualError(''); openPanel('rituals'); }}>
+        <HandHeart size={18} weight="duotone" /><span>月下相聚</span><small>{ritualCounts.mooncake + ritualCounts.moonwatch ? `${ritualCounts.mooncake + ritualCounts.moonwatch} 份回应` : '送月饼 · 一起赏月'}</small><ArrowRight size={16} />
+      </button>
       <button type="button" className="write-button" onClick={() => { setError(''); openPanel('compose'); }}><PencilSimple size={23} weight="light" /><span>写下祝福</span><ArrowRight size={22} /></button>
       <p className="footer-note">匿名发送 · 无需注册</p>
       {connection === 'preview' && <p className="preview-note">本地预览 · 祝福仅在此设备可见</p>}
@@ -411,8 +465,24 @@ export function App() {
 
     {panel === 'list' && <div className="sheet-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setPanel(null); }}><section ref={dialogRef} tabIndex={-1} className="sheet list-sheet" role="dialog" aria-modal="true" aria-labelledby="list-title" aria-describedby="list-intro">
       <button type="button" className="close-button" onClick={() => setPanel(null)} aria-label="关闭"><X size={21} /></button>
-      <span className="sheet-kicker">今夜的月光</span><h2 id="list-title">大家的祝福</h2><p className="sheet-intro" id="list-intro">刚刚送出的心意，都在这里。</p>
+      <span className="sheet-kicker">今夜的月光</span><h2 id="list-title">大家的祝福</h2><p className="sheet-intro" id="list-intro">{count ? `共 ${count} 句心意，慢慢读。` : '刚刚送出的心意，都会在这里。'}</p>
       <div className="wish-list">{wishes.length ? wishes.map(wish => <article key={wish.id} className="wish-row"><p>{wish.content}</p><span>{wish.nickname} · {new Date(wish.created_at).toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit' })}</span></article>) : <p className="list-empty">还没有祝福。你可以写下第一句。</p>}</div>
+    </section></div>}
+
+    {panel === 'rituals' && <div className="sheet-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setPanel(null); }}><section ref={dialogRef} tabIndex={-1} className="sheet ritual-sheet" role="dialog" aria-modal="true" aria-labelledby="ritual-title" aria-describedby="ritual-intro">
+      <button type="button" className="close-button" onClick={() => setPanel(null)} aria-label="关闭"><X size={21} /></button>
+      <span className="sheet-kicker">不必写字，也能相聚</span><h2 id="ritual-title">今夜一起做件小事</h2><p className="sheet-intro" id="ritual-intro">轻轻点一下，把同一轮月光分享给陌生人。</p>
+      <div className="ritual-options">
+        <button type="button" className={joinedRituals.includes('mooncake') ? 'ritual-option is-joined' : 'ritual-option'} onClick={() => joinRitual('mooncake')} disabled={Boolean(ritualSending) || joinedRituals.includes('mooncake')}>
+          <span className="ritual-icon"><Cookie size={30} weight="duotone" /></span><span className="ritual-copy"><strong>{joinedRituals.includes('mooncake') ? '月饼已送到' : '送出一块月饼'}</strong><small>给今夜的相逢添一点甜</small></span><span className="ritual-count">{ritualCounts.mooncake}<small>份甜意</small></span>
+        </button>
+        <button type="button" className={joinedRituals.includes('moonwatch') ? 'ritual-option is-joined' : 'ritual-option'} onClick={() => joinRitual('moonwatch')} disabled={Boolean(ritualSending) || joinedRituals.includes('moonwatch')}>
+          <span className="ritual-icon"><MoonStars size={31} weight="duotone" /></span><span className="ritual-copy"><strong>{joinedRituals.includes('moonwatch') ? '正在一起赏月' : '一起赏一会月'}</strong><small>在同一轮月光下坐一会</small></span><span className="ritual-count">{ritualCounts.moonwatch}<small>人共赏</small></span>
+        </button>
+      </div>
+      {ritualSending && <p className="ritual-status" role="status">正在把这份心意送进月光…</p>}
+      {ritualError && <p className="form-error" role="alert">{ritualError}</p>}
+      <p className="sheet-note">每位访客每项可参与一次，不会公开身份。</p>
     </section></div>}
 
     {selected && <div className="sheet-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setSelected(null); }}><section ref={dialogRef} tabIndex={-1} className="sheet detail-sheet" role="dialog" aria-modal="true" aria-label="一条祝福">

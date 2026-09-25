@@ -74,8 +74,41 @@ try {
   const { error: rateLimitError } = await client
     .from('wishes')
     .insert({ nickname: '部署测试', content: `${marker}-second` });
-  if (!rateLimitError?.message?.includes('15 seconds')) {
-    throw new Error('The server-side 15-second submission limit was not enforced.');
+  const rateLimitElapsed = Date.now() - new Date(inserted.created_at).getTime();
+  if (!rateLimitError && rateLimitElapsed < 15_000) {
+    throw new Error(`The server-side 15-second submission limit was not enforced: ${JSON.stringify(rateLimitError)}`);
+  }
+  if (rateLimitError && !rateLimitError.message?.includes('15 seconds')) throw rateLimitError;
+  const rateLimit = rateLimitError ? true : 'skipped_slow_network';
+
+  const { count: ritualCountBefore, error: ritualCountBeforeError } = await client
+    .from('moon_interactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('kind', 'mooncake');
+  if (ritualCountBeforeError) throw ritualCountBeforeError;
+
+  const { data: ritual, error: ritualInsertError } = await client
+    .from('moon_interactions')
+    .insert({ kind: 'mooncake' })
+    .select('id,kind,created_at')
+    .single();
+  if (ritualInsertError) throw ritualInsertError;
+  if (ritual.kind !== 'mooncake') throw new Error('Inserted ritual kind did not match.');
+
+  const { error: ritualDuplicateError } = await client
+    .from('moon_interactions')
+    .insert({ kind: 'mooncake' });
+  if (ritualDuplicateError?.code !== '23505') {
+    throw new Error('The one-participation-per-ritual rule was not enforced.');
+  }
+
+  const { count: ritualCountAfter, error: ritualCountAfterError } = await client
+    .from('moon_interactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('kind', 'mooncake');
+  if (ritualCountAfterError) throw ritualCountAfterError;
+  if (ritualCountAfter !== ritualCountBefore + 1) {
+    throw new Error('The ritual count did not increase after insertion.');
   }
 
   if (!skipRealtime) {
@@ -87,8 +120,10 @@ try {
     anonymousAuth: true,
     insert: true,
     select: true,
+    rituals: true,
+    ritualDeduplication: true,
     realtime: skipRealtime ? 'skipped' : true,
-    rateLimit: true,
+    rateLimit,
   }));
 } finally {
   if (channel) await client.removeChannel(channel);
