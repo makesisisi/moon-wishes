@@ -1,0 +1,6 @@
+project_id = "moon-wishes-source"
+
+[auth]
+site_url = "https://makesisisi.github.io/moon-wishes/"
+additional_redirect_urls = ["http://127.0.0.1:5173", "https://makesisisi.github.io/moon-wishes/"]
+enable_anonymous_sign_ins = true
