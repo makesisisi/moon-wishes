@@ -1,0 +1,189 @@
+:root { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; color: #fff8e9; background: #061224; }
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-width: 320px; min-height: 100%; height: 100%; overflow: hidden; }
+body { -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+.app-shell { position: relative; width: 100%; height: 100%; overflow: hidden; isolation: isolate; background: #061224; }
+.scene:focus { outline: none; }
+.invitation-backdrop { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 24px; overflow: hidden; background: radial-gradient(circle at 50% 40%, #3c332047 0, #07111bbd 45%, #020810ee 100%); backdrop-filter: blur(5px) saturate(.9); animation: invitation-veil-in .65s ease both; }
+.invitation-backdrop::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .68; background: radial-gradient(circle at 18% 24%, #ffe29a 0 1px, transparent 2px), radial-gradient(circle at 81% 21%, #ffe9bb 0 1.5px, transparent 2.5px), radial-gradient(circle at 74% 71%, #ffd984 0 1px, transparent 2px), radial-gradient(circle at 24% 76%, #fff0c5 0 1px, transparent 2px); background-size: 127px 139px, 173px 181px, 211px 197px, 241px 229px; animation: invitation-stars 5s ease-in-out infinite alternate; }
+.invitation-stage { position: relative; width: min(80vw, 316px); height: 252px; display: grid; align-items: end; outline: none; perspective: 900px; }
+.invitation-envelope { position: relative; width: 100%; height: 182px; padding: 0; overflow: visible; border: 0; border-radius: 8px; color: #5d241c; background: transparent; filter: drop-shadow(0 20px 30px #0009); transform: translateY(0) rotate(-1deg); transform-style: preserve-3d; animation: invitation-arrive .8s cubic-bezier(.2, .86, .26, 1.08) both, envelope-breathe 3.4s ease-in-out .8s infinite; }
+.invitation-envelope:focus-visible { outline: 2px solid #ffe0a1; outline-offset: 10px; }
+.envelope-back { position: absolute; inset: 0; z-index: 0; border: 1px solid #eacb96; border-radius: 8px; background: linear-gradient(145deg, #f9eccd, #dfc28d); box-shadow: inset 0 0 26px #8d4f2629, inset 0 1px 0 #fff8e8; }
+.invitation-letter { position: absolute; z-index: 1; left: 8%; bottom: 11px; width: 84%; height: 214px; display: flex; flex-direction: column; align-items: center; padding: 23px 18px 18px; overflow: hidden; border: 1px solid #d7b87e; border-radius: 3px; background: linear-gradient(#fff9e9ed, #f5e5bfed), repeating-linear-gradient(0deg, transparent 0 12px, #9e6d353d 13px); box-shadow: 0 5px 14px #5e361f45, inset 0 0 30px #b57b3b1c; transform: translateY(-34px); transition: transform .95s cubic-bezier(.18, .78, .24, 1), box-shadow .8s ease; }
+.invitation-letter::before, .invitation-letter::after { content: '❋'; position: absolute; top: 9px; color: #b8893d; font-size: 11px; opacity: .72; }
+.invitation-letter::before { left: 11px; }
+.invitation-letter::after { right: 11px; }
+.invitation-kicker { color: #a5633a; font: 500 10px/1.3 "Songti SC", "STSong", serif; letter-spacing: .24em; }
+.invitation-letter strong { margin-top: 9px; color: #7e211e; font: 600 30px/1.12 "Songti SC", "STSong", serif; letter-spacing: .16em; text-indent: .16em; }
+.invitation-divider { width: 74%; display: flex; align-items: center; gap: 8px; margin: 9px 0 8px; color: #bb8b45; font: 11px/1 serif; }
+.invitation-divider i { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #b68541, transparent); }
+.invitation-copy { color: #563b2d; font: 14px/1.7 "Songti SC", "STSong", serif; letter-spacing: .09em; }
+.invitation-signature { margin-top: auto; color: #96704b; font: 10px/1.2 "Songti SC", serif; letter-spacing: .12em; }
+.envelope-fold { position: absolute; z-index: 2; bottom: 0; pointer-events: none; }
+.fold-left { left: 0; width: 53%; height: 100%; border-radius: 0 0 0 8px; background: linear-gradient(62deg, #ead2a4, #f8ebce); clip-path: polygon(0 0, 100% 50%, 100% 100%, 0 100%); }
+.fold-right { right: 0; width: 53%; height: 100%; border-radius: 0 0 8px 0; background: linear-gradient(-62deg, #e2c18c, #f6e6c4); clip-path: polygon(100% 0, 0 50%, 0 100%, 100% 100%); }
+.fold-bottom { left: 0; width: 100%; height: 67%; border-radius: 0 0 8px 8px; background: linear-gradient(175deg, #f6e6c5, #dfbd87); clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+.envelope-flap { position: absolute; z-index: 3; top: 0; left: 0; width: 100%; height: 67%; pointer-events: none; border-radius: 8px 8px 0 0; background: linear-gradient(168deg, #f9edcf, #e6ca99); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: 50% 0; transition: transform .65s cubic-bezier(.3, .02, .2, 1), z-index 0s .24s; backface-visibility: visible; }
+.invitation-seal { position: absolute; z-index: 4; left: 50%; top: 66px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; color: #ffdca4; background: radial-gradient(circle at 38% 30%, #c9533f, #84221e 72%); box-shadow: 0 2px 5px #4c180f78, inset 0 0 0 2px #e5846675, inset 0 0 0 5px #741d1a; transform: translateX(-50%); transition: opacity .2s ease .12s, transform .35s ease; }
+.invitation-seal b { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #efb476; border-radius: 50%; font: 500 16px/1 "Songti SC", serif; }
+.invitation-hint { position: absolute; z-index: 5; left: 0; right: 0; bottom: 22px; color: #6e382b; font: 500 12px/1 "Songti SC", serif; letter-spacing: .2em; text-shadow: 0 1px #fff4d4; animation: invitation-hint 1.8s ease-in-out infinite; transition: opacity .18s ease; }
+.invitation-glint { position: absolute; z-index: 5; color: #ffe5a4; text-shadow: 0 0 8px #ffdc83, 0 0 22px #ffa93e; animation: invitation-glint 2.2s ease-in-out infinite; }
+.glint-one { top: 18px; right: -4px; font-size: 16px; }
+.glint-two { top: 66px; left: -12px; font-size: 9px; animation-delay: -.8s; }
+.invitation-backdrop.is-opening { pointer-events: none; animation: invitation-veil-out .62s ease .68s both; }
+.is-opening .invitation-envelope { animation: invitation-release 1.18s cubic-bezier(.18, .7, .22, 1) both; }
+.is-opening .envelope-flap { z-index: 0; transform: rotateX(178deg); transition-delay: 0s; }
+.is-opening .invitation-seal { opacity: 0; transform: translateX(-50%) scale(.78) rotate(14deg); transition-delay: 0s; }
+.is-opening .invitation-hint { opacity: 0; }
+.is-opening .invitation-letter { z-index: 4; transform: translateY(-112px); box-shadow: 0 18px 28px #27120573; transition-delay: .22s; }
+.ambient-image, .ambient-shade { position: fixed; inset: -24px; pointer-events: none; }
+.ambient-image { z-index: -2; background: var(--scene-image) center 44% / cover no-repeat; filter: blur(20px) brightness(.36) saturate(.88); transform: scale(1.06); }
+.ambient-shade { z-index: -1; background: radial-gradient(circle at 50% 38%, transparent 0 18%, #03101fcf 68%), linear-gradient(90deg, #03101fa6, transparent 38% 62%, #03101fa6); }
+.scene { position: relative; width: min(100vw, 430px); height: 100vh; height: 100dvh; margin: 0 auto; overflow: hidden; overflow: clip; isolation: isolate; background: #071526; box-shadow: 0 0 90px #0009; }
+.scene-image, .scene-shade { position: absolute; inset: 0; pointer-events: none; }
+.scene-image { background-image: var(--scene-image); background-size: cover; background-position: center; animation: image-breathe 18s cubic-bezier(.45, 0, .55, 1) infinite alternate; will-change: transform; }
+.scene-shade { background: linear-gradient(180deg, #07182a72 0%, transparent 18%, transparent 36%, #071b3030 50%, transparent 72%, #050e1cc9 100%); }
+.scene-atmosphere { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.star-wash { position: absolute; inset: 5% 0 34%; opacity: .78; background: radial-gradient(circle at 8% 18%, #fff1bd 0 1.5px, transparent 2.8px), radial-gradient(circle at 32% 38%, #ffe1a0 0 1.5px, transparent 2.8px), radial-gradient(circle at 67% 12%, #fff4cc 0 1.5px, transparent 2.8px), radial-gradient(circle at 88% 46%, #ffd77e 0 2px, transparent 3.5px), radial-gradient(circle at 57% 62%, #fff0b8 0 1.5px, transparent 2.8px); background-size: 137px 151px, 181px 193px, 223px 179px, 257px 211px, 293px 241px; mix-blend-mode: screen; animation: star-drift 12s linear infinite alternate; }
+.moon-ring { position: absolute; width: 66%; aspect-ratio: 1; left: 17%; top: 12.5%; border: 1.5px solid #ffe5a35c; border-radius: 50%; box-shadow: 0 0 25px #ffe1a36b, inset 0 0 24px #ffe1a343; animation: moon-ring 6.4s ease-in-out infinite; }
+.moon-aura { position: absolute; width: 94%; aspect-ratio: 1; left: 3%; top: 4.8%; border-radius: 50%; background: radial-gradient(circle, #fff0bf5c 0 19%, #ffd07138 34%, #ffd07118 54%, transparent 72%); mix-blend-mode: screen; filter: blur(6px); animation: moon-breathe 4.8s ease-in-out infinite alternate; }
+.moon-sheen { position: absolute; width: 53%; aspect-ratio: 1; left: 23.5%; top: 15%; border-radius: 50%; overflow: hidden; opacity: .56; mix-blend-mode: screen; mask-image: radial-gradient(circle, #000 0 65%, transparent 72%); background: linear-gradient(112deg, transparent 20%, #fff5d96e 40%, #fff9e9d1 49%, #ffe5a85e 58%, transparent 76%); transform: translateX(-62%) rotate(-5deg); animation: moon-sheen 7.2s ease-in-out infinite; }
+.cloud-veil { position: absolute; top: 22%; left: -30%; width: 160%; height: 27%; opacity: .26; filter: blur(7px); background: radial-gradient(ellipse at 20% 50%, #d7e4ec73 0 12%, transparent 34%), radial-gradient(ellipse at 56% 44%, #afc4d780 0 15%, transparent 38%), radial-gradient(ellipse at 88% 56%, #d3dfeb5c 0 12%, transparent 34%); mix-blend-mode: screen; animation: cloud-breathe 24s ease-in-out infinite alternate; }
+.mist { position: absolute; left: -55%; width: 210%; height: 19%; border-radius: 50%; opacity: .42; filter: blur(11px); background: radial-gradient(ellipse at center, #e2edf2 0, #9ab9d291 36%, transparent 70%); will-change: transform; }
+.mist-near { top: 34%; animation: mist-drift 31s ease-in-out infinite alternate; }
+.mist-far { top: 47%; opacity: .18; transform: scaleY(.62); animation: mist-drift-reverse 39s ease-in-out infinite alternate; }
+.water-shimmer { position: absolute; left: 11%; right: 5%; bottom: 5%; height: 38%; opacity: .68; filter: blur(.2px); background: repeating-linear-gradient(178deg, transparent 0 9px, #ffd78b35 10px 12px, transparent 13px 19px), linear-gradient(90deg, transparent 0 24%, #ffd58a38 46%, #fff1bd66 55%, #f7bd6028 70%, transparent 94%); mask-image: radial-gradient(ellipse at 55% 40%, black 0 38%, transparent 76%); transform-origin: 50% 50%; animation: water-glimmer 3.9s ease-in-out infinite alternate; mix-blend-mode: screen; }
+.water-ripple { position: absolute; height: 3px; border-radius: 50%; opacity: 0; background: linear-gradient(90deg, transparent, #ffe2a19c 24%, #fff7d9e8 50%, #ffd17a87 76%, transparent); filter: blur(.1px); box-shadow: 0 0 8px #ffd47a52; mix-blend-mode: screen; transform-origin: center; animation: water-ripple 4.8s ease-out infinite; }
+.ripple-one { left: 29%; width: 45%; bottom: 26%; animation-delay: -1.3s; }
+.ripple-two { left: 40%; width: 35%; bottom: 18%; animation-delay: -4.4s; animation-duration: 7.1s; }
+.ripple-three { left: 18%; width: 56%; bottom: 10%; animation-delay: -3s; animation-duration: 8.2s; }
+.background-lantern { position: absolute; left: var(--lantern-left); top: var(--lantern-top); width: var(--lantern-size); aspect-ratio: .72; border-radius: 45% 45% 34% 34%; opacity: .96; background: linear-gradient(90deg, #9e291b, #ffe39a 47%, #a62d1c); border-top: 1px solid #fff0c5e6; box-shadow: 0 0 10px #ffc35dcc, 0 0 28px #ff8c268c; transform-origin: 50% 70%; animation: background-lantern var(--lantern-duration) ease-in-out var(--lantern-delay) infinite; }
+.background-lantern::before, .background-lantern::after { content: ''; position: absolute; left: 18%; right: 18%; height: 1px; background: #5d1a13; box-shadow: 0 0 2px #ffda8c; }
+.background-lantern::before { top: 17%; }
+.background-lantern::after { bottom: 16%; }
+.background-lantern i { position: absolute; left: 47%; top: 19%; bottom: 17%; width: 1px; background: #7b251aab; box-shadow: 0 0 5px #fff0ad; animation: lantern-heart 2.4s ease-in-out infinite; }
+.ambient-speck { position: absolute; left: var(--speck-left); top: var(--speck-top); width: 5px; height: 5px; border-radius: 50%; background: #fff7d6; opacity: var(--speck-opacity); box-shadow: 0 0 8px #ffe5a2, 0 0 22px #ffb349; animation: speck-glimmer 3.2s ease-in-out var(--speck-delay) infinite; }
+.osmanthus-petal { position: absolute; top: -5%; left: var(--petal-left); width: calc(var(--petal-size) * 1.18); height: calc(var(--petal-size) * .72); border-radius: 70% 20% 70% 30%; background: linear-gradient(135deg, #fffbd0, #f4ae25 68%); filter: drop-shadow(0 0 7px #ffc44ce6); opacity: 0; animation: petal-fall var(--petal-duration) linear var(--petal-delay) infinite; will-change: transform, opacity; }
+.scene-header { position: absolute; top: clamp(36px, 6.6svh, 72px); left: 8.5%; right: 8.5%; z-index: 1; text-shadow: 0 2px 20px #071628; }
+.scene-header h1 { font: 500 clamp(39px, 10.7vw, 54px)/1.18 "Songti SC", "STSong", "Noto Serif CJK SC", serif; letter-spacing: .08em; margin: 0; color: #fff1c6; text-shadow: 0 1px 12px #ffbf56b0, 0 3px 20px #06111e; white-space: nowrap; }
+.scene-header p { margin: 9px 0 0 2px; font: 400 clamp(14px, 3.8vw, 18px)/1.5 "Songti SC", "STSong", serif; letter-spacing: .12em; color: #ffedc8; }
+.wish-sky { position: absolute; top: 36%; bottom: 43%; left: 0; right: 0; z-index: 2; overflow: hidden; mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%); }
+.flying-wish { position: absolute; left: 0; display: block; padding: 7px 0; width: max-content; white-space: nowrap; border: 0; background: transparent; color: #fff2d0; text-shadow: 0 2px 7px #031121, 0 0 9px #0b1d31, 0 0 18px #0b1d31; font-size: 15px; font-weight: 500; letter-spacing: .03em; animation-name: wish-travel; animation-timing-function: linear; animation-fill-mode: both; will-change: transform, opacity; }
+.flying-wish:focus-visible { outline: 1px solid #f8d58c; outline-offset: 3px; }
+.wish-orbit { display: inline-flex; align-items: baseline; gap: 7px; animation: wish-float var(--wish-bob-duration, 4.6s) ease-in-out infinite alternate; will-change: transform; }
+.wish-copy { font-family: "Songti SC", "STSong", serif; font-size: 17px; }
+.wish-spark { font-size: 11px; color: #ffe2a0; text-shadow: 0 0 7px #ffe0a0, 0 0 16px #ffb24d; animation: spark-pulse 2.1s ease-in-out infinite; animation-delay: var(--wish-glow-delay, 0s); }
+.flying-wish small { font-size: 11px; color: #d5d2cb; opacity: .86; }
+.still-wish { position: absolute; top: 40%; left: 8%; width: 84%; background: #071425bd; border: 1px solid #f7ddaf55; border-radius: 12px; padding: 14px; color: #fff2d0; font: 18px/1.5 "Songti SC", serif; text-align: left; }
+.still-wish small { display: block; color: #e0c8a3; margin-top: 6px; font: 12px/1.4 sans-serif; }
+.empty-sky { position: absolute; top: 36%; width: 100%; text-align: center; color: #fff2d0cf; font: 16px/1.6 "Songti SC", serif; text-shadow: 0 2px 9px #031121; }
+.scene-footer { position: absolute; z-index: 4; bottom: max(23px, env(safe-area-inset-bottom)); left: 10%; width: 80%; display: flex; flex-direction: column; align-items: center; }
+.sub-actions { display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center; width: 100%; margin-bottom: 14px; gap: 6px; }
+.sub-actions button { background: #07172899; border: 1px solid #fff6dc35; border-radius: 40px; color: #fff2de; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 8px; font-size: 11px; white-space: nowrap; backdrop-filter: blur(10px); }
+.sub-actions button:active { transform: scale(.98); }
+.sub-actions .music-on { color: #fff0b6; border-color: #f3cf766e; background: #3b291aa6; box-shadow: 0 0 16px #efad3630; }
+.write-button, .send-button { border: 1px solid #f7dca4; background: linear-gradient(120deg, #9c2725, #cb4330 42%, #982822); color: #fff2d1; box-shadow: inset 0 1px 0 #fff0bd79, 0 0 0 3px #7920167d, 0 8px 28px #140e0daa; }
+.write-button { position: relative; width: 100%; min-height: 66px; border: 0; box-shadow: none; background: transparent var(--wish-button) center / 100% 100% no-repeat; border-radius: 16px; display: flex; justify-content: center; align-items: center; gap: 22px; font: 500 27px "Songti SC", "STSong", serif; letter-spacing: .1em; text-shadow: 0 2px 5px #6a2117; transition: transform .48s cubic-bezier(.2, 1.7, .35, 1), filter .25s ease; transform-origin: 50% 70%; isolation: isolate; }
+.write-button::before { content: ''; position: absolute; z-index: -1; inset: 8px 4%; border-radius: 18px; background: radial-gradient(ellipse, #ffdc866b 0, #e8471c2b 48%, transparent 72%); filter: blur(10px); opacity: .48; animation: button-aura 3.6s ease-in-out infinite; }
+.write-button svg:last-child { transition: transform .45s cubic-bezier(.2, 1.7, .35, 1); }
+.write-button:hover, .send-button:hover { filter: brightness(1.12); }
+.write-button:hover svg:last-child { transform: translateX(4px); }
+.write-button:active { transform: translateY(2px) scale(.965); filter: brightness(1.22); transition-duration: .1s; }
+.send-button:active { transform: translateY(1px); }
+.footer-note { margin: 13px 0 0; color: #fff6e3d1; font-size: 12px; letter-spacing: .08em; text-shadow: 0 2px 10px #000; }
+.preview-note { margin: 5px 0 0; color: #ffe0a7d9; font-size: 11px; }
+.lantern-flight { position: absolute; z-index: 5; width: 118px; height: 118px; left: calc(50% - 59px); top: 70%; pointer-events: none; animation: lantern-flight 4.35s cubic-bezier(.2, .62, .22, 1) forwards; will-change: transform, opacity; }
+.lantern-flight::before { content: ''; position: absolute; inset: 20% 18% 7%; border-radius: 50%; background: #ffac3d66; filter: blur(15px); animation: lantern-glow 1.15s ease-in-out infinite alternate; }
+.lantern-art { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px #3a100f) drop-shadow(0 0 13px #ffad3eaa); animation: lantern-sway 1.35s ease-in-out infinite alternate; transform-origin: 50% 68%; }
+.lantern-ember { --ember-scale: 1; position: absolute; z-index: 2; left: 50%; top: 58%; width: 4px; height: 4px; border-radius: 50%; background: #ffe0a3; box-shadow: 0 0 8px #ff9e36; animation: ember-rise 1.45s ease-out infinite; }
+.ember-two { --ember-scale: .7; margin-left: -13px; animation-delay: -.48s; }
+.ember-three { --ember-scale: .55; margin-left: 11px; animation-delay: -.92s; }
+.toast { position: absolute; z-index: 11; top: 22%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 90%; display: flex; align-items: center; gap: 8px; padding: 11px 15px; color: #fff8ec; background: #0c2b3fe8; border: 1px solid #f4d89b7a; border-radius: 12px; box-shadow: 0 8px 30px #0008; font-size: 13px; }
+.sheet-backdrop { position: absolute; inset: 0; z-index: 20; display: grid; grid-template-rows: minmax(0, 1fr) auto; align-items: stretch; }
+.sheet-backdrop::before { content: ''; grid-column: 1; grid-row: 1; min-height: 0; pointer-events: none; background: linear-gradient(180deg, #030a14d1, #030a14b8); backdrop-filter: blur(3px); animation: veil-in .42s ease both; }
+.sheet { position: relative; grid-column: 1; grid-row: 2; align-self: end; width: 100%; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; border-radius: 23px 23px 0 0; padding: 29px 26px max(30px, env(safe-area-inset-bottom)); background: #102337 var(--scene-image) center 32% / cover no-repeat; box-shadow: 0 -12px 60px #000a; border-top: 1px solid #f3d8a657; transform-origin: 50% 100%; animation: sheet-in .58s cubic-bezier(.2, .82, .28, 1) both; outline: none; }
+.sheet::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, #0d1d2af5, #102235ee); pointer-events: none; }
+.sheet > * { position: relative; animation: sheet-content-in .48s cubic-bezier(.2, .75, .25, 1) both; }
+.sheet > :nth-child(1) { animation-delay: .16s; }
+.sheet > :nth-child(2) { animation-delay: .19s; }
+.sheet > :nth-child(3) { animation-delay: .22s; }
+.sheet > :nth-child(4) { animation-delay: .25s; }
+.sheet > :nth-child(n+5) { animation-delay: .28s; }
+.close-button { position: absolute; z-index: 2; top: 17px; right: 15px; color: #f9e0b3; background: #e8c99514; border: 1px solid #f1d8ab4d; border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; }
+.sheet-kicker { color: #f2bc78; font-size: 12px; letter-spacing: .2em; }
+.sheet h2 { font: 500 30px/1.3 "Songti SC", "STSong", serif; margin: 12px 0 5px; color: #ffebc1; }
+.sheet-intro { color: #e0d9c9; font-size: 13px; margin: 0 0 27px; }
+.sheet form { display: flex; flex-direction: column; }
+.sheet label { font-size: 13px; color: #ffedca; margin: 0 0 9px; }
+.sheet label span { color: #9fb0b8; font-size: 11px; }
+.sheet textarea, .sheet input { width: 100%; border: 1px solid #c3bfa769; border-radius: 10px; background: #081a2bd8; color: #fff9ef; outline: none; padding: 14px; font-size: 15px; resize: none; }
+.sheet textarea:focus, .sheet input:focus { border-color: #f9cd83; box-shadow: 0 0 0 2px #eeba7333; }
+.sheet textarea::placeholder, .sheet input::placeholder { color: #9da9ad; }
+.field-foot { text-align: right; color: #c2c3ba; font-size: 11px; margin: 6px 0 15px; }
+.send-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border-radius: 10px; min-height: 52px; margin-top: 23px; font: 18px "Songti SC", serif; }
+.send-button:disabled { opacity: .55; cursor: not-allowed; }
+.form-error { color: #ffbaa5; font-size: 13px; margin: 9px 0 0; }
+.sheet-note { color: #bfc3be; font-size: 11px; text-align: center; margin: 15px 0 0; }
+.list-sheet { height: min(77%, 650px); display: flex; flex-direction: column; }
+.wish-list { overflow-y: auto; padding-right: 4px; min-height: 0; }
+.wish-row { border-top: 1px solid #eccf9d30; padding: 15px 0; }
+.wish-row p { margin: 0 0 8px; line-height: 1.6; font-size: 15px; color: #fff5df; overflow-wrap: anywhere; }
+.wish-row span, .list-empty { color: #c5beb0; font-size: 12px; }
+.detail-sheet { min-height: 260px; }
+.detail-sheet blockquote { font: 21px/1.7 "Songti SC", serif; margin: 22px 0 12px; overflow-wrap: anywhere; }
+.detail-sheet p { text-align: right; color: #dfc697; font-size: 13px; }
+@keyframes wish-travel {
+  0% { transform: translate3d(calc(min(100vw, 430px) + 22px), 0, 0); opacity: 0; }
+  4% { opacity: .96; }
+  48% { transform: translate3d(calc(min(50vw, 215px) - 50%), var(--wish-drift, 0), 0); opacity: 1; }
+  92% { opacity: .96; }
+  100% { transform: translate3d(calc(-100% - 22px), 0, 0); opacity: 0; }
+}
+@keyframes wish-float { from { transform: translateY(calc(0px - var(--wish-bob, 5px))); } to { transform: translateY(var(--wish-bob, 5px)); } }
+@keyframes spark-pulse { 0%, 100% { opacity: .56; transform: scale(.78) rotate(0); } 50% { opacity: 1; transform: scale(1.18) rotate(16deg); } }
+@keyframes lantern-flight {
+  0% { transform: translate3d(0, 18px, 0) scale(.68); opacity: 0; }
+  11% { opacity: 1; }
+  34% { transform: translate3d(-12px, -14vh, 0) scale(.67); }
+  64% { transform: translate3d(10px, -30vh, 0) scale(.54); opacity: 1; }
+  88% { opacity: .88; }
+  100% { transform: translate3d(-5px, -49vh, 0) scale(.35); opacity: 0; }
+}
+@keyframes lantern-sway { from { transform: rotate(-2.8deg) translateX(-1px); } to { transform: rotate(3.2deg) translateX(2px); } }
+@keyframes lantern-glow { from { opacity: .58; transform: scale(.88); } to { opacity: 1; transform: scale(1.08); } }
+@keyframes ember-rise { 0% { opacity: 0; transform: translate3d(0, 2px, 0) scale(var(--ember-scale)); } 24% { opacity: .9; } 100% { opacity: 0; transform: translate3d(4px, -30px, 0) scale(var(--ember-scale)); } }
+@keyframes image-breathe { from { transform: scale(1.018) translate3d(.55%, .38%, 0); } to { transform: scale(1.073) translate3d(-1.1%, -.72%, 0); } }
+@keyframes star-drift { from { transform: translate3d(-6px, 3px, 0); opacity: .46; } to { transform: translate3d(9px, -8px, 0); opacity: .96; } }
+@keyframes moon-ring { 0%, 100% { opacity: .34; transform: scale(.91); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes moon-breathe { from { opacity: .62; transform: scale(.91); } to { opacity: 1; transform: scale(1.11); } }
+@keyframes moon-sheen { 0%, 12% { opacity: 0; transform: translateX(-70%) rotate(-5deg); } 40% { opacity: .76; } 67% { opacity: .32; } 86%, 100% { opacity: 0; transform: translateX(78%) rotate(-5deg); } }
+@keyframes cloud-breathe { from { transform: translate3d(-4%, 4px, 0) scaleY(.88); opacity: .18; } to { transform: translate3d(5%, -7px, 0) scaleY(1.08); opacity: .35; } }
+@keyframes water-glimmer { from { transform: translate3d(-7px, 4px, 0) scaleX(.91); opacity: .34; } to { transform: translate3d(9px, -4px, 0) scaleX(1.09); opacity: .86; } }
+@keyframes water-ripple { 0% { opacity: 0; transform: translate3d(0, 6px, 0) scaleX(.3); } 18% { opacity: .92; } 68% { opacity: .36; } 100% { opacity: 0; transform: translate3d(12px, -10px, 0) scaleX(1.35); } }
+@keyframes background-lantern { 0%, 100% { opacity: .68; transform: translate3d(-5px, 7px, 0) rotate(-4deg) scale(.9); filter: brightness(.82); } 38% { opacity: 1; transform: translate3d(5px, -10px, 0) rotate(4deg) scale(1.12); filter: brightness(1.34); } 68% { opacity: .82; transform: translate3d(8px, -3px, 0) rotate(-2deg) scale(1); filter: brightness(1); } }
+@keyframes lantern-heart { from { opacity: .42; } to { opacity: 1; } }
+@keyframes mist-drift { from { transform: translate3d(-7%, 0, 0) scaleY(.82); } to { transform: translate3d(8%, -5px, 0) scaleY(1.02); } }
+@keyframes mist-drift-reverse { from { transform: translate3d(9%, 0, 0) scaleY(.62); } to { transform: translate3d(-8%, 6px, 0) scaleY(.72); } }
+@keyframes speck-glimmer { 0%, 100% { opacity: .12; transform: scale(.42); } 38% { opacity: 1; transform: scale(1.75); } 62% { opacity: .42; transform: scale(.76); } }
+@keyframes petal-fall { 0% { opacity: 0; transform: translate3d(0, -12px, 0) rotate(0deg); } 7% { opacity: 1; } 48% { transform: translate3d(-46px, 34vh, 0) rotate(205deg); } 88% { opacity: .82; } 100% { opacity: 0; transform: translate3d(28px, 76vh, 0) rotate(420deg); } }
+@keyframes button-aura { 0%, 100% { opacity: .28; transform: scale(.94); } 50% { opacity: .66; transform: scale(1.025); } }
+@keyframes invitation-veil-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes invitation-veil-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes invitation-arrive { from { opacity: 0; transform: translateY(36px) rotate(-3deg) scale(.9); } to { opacity: 1; transform: translateY(0) rotate(-1deg) scale(1); } }
+@keyframes envelope-breathe { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-4px) rotate(.5deg); } }
+@keyframes invitation-release { 0% { transform: translateY(0) rotate(-1deg); } 54% { transform: translateY(8px) rotate(1deg); } 100% { transform: translateY(36px) rotate(0) scale(.96); opacity: 0; } }
+@keyframes invitation-stars { from { opacity: .35; transform: translate3d(-5px, 4px, 0); } to { opacity: .8; transform: translate3d(7px, -5px, 0); } }
+@keyframes invitation-hint { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
+@keyframes invitation-glint { 0%, 100% { opacity: .28; transform: scale(.72) rotate(0); } 50% { opacity: 1; transform: scale(1.22) rotate(18deg); } }
+@keyframes veil-in { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; backdrop-filter: blur(3px); } }
+@keyframes sheet-in { 0% { transform: translate3d(0, 100%, 0); opacity: .72; } 100% { transform: translate3d(0, 0, 0); opacity: 1; } }
+@keyframes sheet-content-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 600px) { .scene { border-inline: 1px solid #b0a98541; } }
+@media (max-width: 599px) { .ambient-image, .ambient-shade { display: none; } }
+@media (max-height: 700px) { .scene-header { top: 29px; } .scene-header h1 { font-size: 39px; } .scene-footer { bottom: 16px; } .write-button { min-height: 56px; } .wish-sky { top: 42%; bottom: 32%; } }
+.panel-open .scene-image { animation-play-state: paused; }
+.motion-off .scene-image, .motion-off .lantern-flight, .motion-off .flying-wish, .motion-off .star-wash, .motion-off .moon-ring, .motion-off .moon-aura, .motion-off .moon-sheen, .motion-off .background-lantern, .motion-off .background-lantern i, .motion-off .cloud-veil, .motion-off .mist, .motion-off .water-shimmer, .motion-off .water-ripple, .motion-off .ambient-speck, .motion-off .osmanthus-petal, .motion-off .write-button::before { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .scene-image, .lantern-flight, .lantern-art, .lantern-ember, .flying-wish, .wish-orbit, .wish-spark, .star-wash, .moon-ring, .moon-aura, .moon-sheen, .background-lantern, .background-lantern i, .cloud-veil, .mist, .water-shimmer, .water-ripple, .ambient-speck, .osmanthus-petal, .write-button::before, .sheet-backdrop::before, .sheet, .sheet > *, .invitation-backdrop, .invitation-backdrop::before, .invitation-envelope, .invitation-hint, .invitation-glint { animation: none !important; } .envelope-flap, .invitation-letter, .invitation-seal { transition-duration: .01ms !important; } }
